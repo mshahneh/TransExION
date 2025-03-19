@@ -67,7 +67,6 @@ class relScaleDotProductAttention(nn.Module):
         attn = self.softmax(attn)
         self.save_attn(attn)
         
-        #if self.training == False: 
         if self.training and attn.requires_grad:
             attn.register_hook(self.save_attn_gradients)
         else:
