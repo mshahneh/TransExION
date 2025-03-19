@@ -10,7 +10,7 @@ import copy
 import torch 
 from torch import nn
  
-from lrp import basic
+from . import basic
 
 
 class relScaleDotProductAttention(nn.Module):
@@ -68,7 +68,11 @@ class relScaleDotProductAttention(nn.Module):
         self.save_attn(attn)
         
         #if self.training == False: 
-        attn.register_hook(self.save_attn_gradients)
+        if self.training and attn.requires_grad:
+            attn.register_hook(self.save_attn_gradients)
+        else:
+            # Optionally, log a warning or simply pass
+            pass
         
         if self.dropout is not None:
             attn = self.dropout(attn)
@@ -137,6 +141,7 @@ class relMultiheadAttention(nn.Module):
                 .reshape(batch_size, seq_len, out_dim)
             
     def forward(self, q, k, v, attn_mask=None, key_padding_mask=None):
+        # print("relMultiheadAttention: requires_grad for q", q.requires_grad, flush=True)
         bsz, src_len, _ = k.shape
         if key_padding_mask is not None:
             key_padding_mask = key_padding_mask.view(bsz, 1, 1, src_len). \
@@ -151,7 +156,7 @@ class relMultiheadAttention(nn.Module):
             new_attn_mask = torch.zeros_like(attn_mask, dtype=q.dtype)
             new_attn_mask.masked_fill_(attn_mask, float('-inf'))
             attn_mask = new_attn_mask
-           
+        
         q = self.q_proj(q)
         k = self.k_proj(k)
         v = self.v_proj(v)
@@ -216,7 +221,8 @@ class relTransformerEncoderLayer(nn.Module):
         
     def forward(self, src, attn_mask=None, src_key_padding_mask=None):
         x1, x2, x3, x4 = self.clone_1(src, 4) 
-    
+
+        # print("relTransformerEncoderLayer: requires_grad for x1", x1.requires_grad, flush=True)
         h = self.self_attn(x1, x2, x3, attn_mask, src_key_padding_mask)
         h = self.dropout1(h)
         
@@ -463,6 +469,8 @@ class relMSDiffModel(nn.Module):
         x = self.defect_emb(x)
         x = torch.flatten(x, start_dim=2) #N x L x m*d
         
+        # print("relMSDiffModel: requires_grad for x", x.requires_grad, flush=True)
+        
         x = self.nominal_emb_1(x)
         x = self.nominal_emb_2(x)
         x = self.peak_emb(x) #N x L x D
@@ -474,6 +482,7 @@ class relMSDiffModel(nn.Module):
     def rel_prop(self, R, **kwargs):
         R = self.pooling.rel_prop(R, **kwargs)
     
+        # print("relMSDiffModel: requires_grad for R", R.requires_grad, flush=True)
         xR = self.transformer_encoder.rel_prop(R, **kwargs)
         
         xR = self.peak_emb.rel_prop(xR, **kwargs)
@@ -503,7 +512,7 @@ class relMSSimilarityModel(nn.Module):
         self.cat = basic.relCat()
         
     def forward(self, mz_f, mz_mask, loss_f, loss_mask):
-        
+        # print("relMSSimilarityModel: requires_grad for mz_f", mz_f.requires_grad, flush=True)
         mz_x = self.mz_encoder(mz_f, mz_mask)
         loss_x = self.loss_encoder(loss_f, loss_mask)
         
