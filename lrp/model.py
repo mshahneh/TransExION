@@ -10,7 +10,7 @@ import copy
 import torch 
 from torch import nn
  
-from lrp import basic
+from . import basic
 
 
 class relScaleDotProductAttention(nn.Module):
@@ -67,8 +67,11 @@ class relScaleDotProductAttention(nn.Module):
         attn = self.softmax(attn)
         self.save_attn(attn)
         
-        #if self.training == False: 
-        attn.register_hook(self.save_attn_gradients)
+        if self.training and attn.requires_grad:
+            attn.register_hook(self.save_attn_gradients)
+        else:
+            # Optionally, log a warning or simply pass
+            pass
         
         if self.dropout is not None:
             attn = self.dropout(attn)
