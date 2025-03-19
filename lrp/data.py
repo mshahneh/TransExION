@@ -12,7 +12,9 @@ import torch
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data.dataset import Dataset
 
-from spectrum.io import load_mgf_file, convert_raw2refined_spectra
+import sys
+import os
+from modistruct.data_modules.data_preparation.spectrum_encodings.TransExION.spectrum.io import load_mgf_file, convert_raw2refined_spectra
 import math
 
 C_MAX_PEAK_DIFF = 299
