@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "transexion"
+version = "0.1"
+description = "TransExION package"
+readme = "README.md"
+
+[project.optional-dependencies]
+extras = []  # Define optional dependencies here if needed
+
+[project.urls]
+Repository = "https://github.com/mshahneh/TransExION"
+
+[tool.setuptools.packages]
+find = {include = ["transexion"]}

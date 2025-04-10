@@ -10,7 +10,7 @@ import copy
 import torch 
 from torch import nn
  
-from . import basic
+from transexion.lrp import basic
 
 
 class relScaleDotProductAttention(nn.Module):

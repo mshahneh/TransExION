@@ -5,9 +5,9 @@ Created on 23 Sep 2022
 '''
 
 import torch  
-from lrp import basic
-from lrp.basic import forward_hook, embedding_relpop
-from lrp.model import relMSSimilarityModel
+from transexion.lrp import basic
+from transexion.lrp.basic import forward_hook, embedding_relpop
+from transexion.lrp.model import relMSSimilarityModel
 
 def register_forward_hook_4_model(model):
     children = list(model.children())

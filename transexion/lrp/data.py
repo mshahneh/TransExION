@@ -14,7 +14,7 @@ from torch.utils.data.dataset import Dataset
 
 import sys
 import os
-from modistruct.data_modules.data_preparation.spectrum_encodings.TransExION.spectrum.io import load_mgf_file, convert_raw2refined_spectra
+from transexion.spectrum.io import load_mgf_file, convert_raw2refined_spectra
 import math
 
 C_MAX_PEAK_DIFF = 299

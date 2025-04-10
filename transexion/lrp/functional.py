@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 import torch
  
-from lrp.explanator import LRPGenerator
+from transexion.lrp.explanator import LRPGenerator
 
 def import_regression_result(output, target, y_pred_scores, y_trues):
     predicted_scores = output.tolist()
