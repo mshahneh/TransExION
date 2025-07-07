@@ -111,7 +111,7 @@ class MSObject(object):
         
     def get_neutral_loss(self):
         x = np.array(self.mz)
-        x = (x[-1] - x)[::-1]
+        x = (self.pepmass - x)[::-1]
         return list(x[1:])
     
 def load_mgf_file(file_name, use_drug = False, encoding='utf-8', mol_id_key=None, prefix=''):
