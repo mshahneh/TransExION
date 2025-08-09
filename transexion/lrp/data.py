@@ -47,30 +47,59 @@ def mspair_collate_fn(batch):
     labels = torch.tensor(labels, dtype=torch.double)
     return X, X_mask, Y, Y_mask, labels
     
-def vectorize_mass_diff(x, dmass):
-    '''
-    Convert a mass difference matrix into aligned matrix 
-    '''
-    n, m = x.shape
-    f = torch.zeros(n+1, C_MAX_PEAK_DIFF+1, dtype=torch.long)
-    x = np.round(x * C_NUM_DEFFECT_BIN, 0).astype(int)
+# def vectorize_mass_diff(x, dmass):
+#     '''
+#     Convert a mass difference matrix into aligned matrix 
+#     '''
+#     n, m = x.shape
+#     f = torch.zeros(n+1, C_MAX_PEAK_DIFF+1, dtype=torch.long)
+#     x = np.round(x * C_NUM_DEFFECT_BIN, 0).astype(int)
     
-    dmass = np.round(dmass*C_NUM_DEFFECT_BIN, 0).astype(int)
-    r = dmass // C_NUM_DEFFECT_BIN
-    c = dmass % C_NUM_DEFFECT_BIN
-    if r >= C_MAX_PEAK_DIFF:
-        f[0, 0] = CLS #CLS token
-    else:
-        f[0, r+1] = c + 2 
+#     dmass = np.round(dmass*C_NUM_DEFFECT_BIN, 0).astype(int)
+#     r = dmass // C_NUM_DEFFECT_BIN
+#     c = dmass % C_NUM_DEFFECT_BIN
+#     if r >= C_MAX_PEAK_DIFF:
+#         f[0, 0] = CLS #CLS token
+#     else:
+#         f[0, r+1] = c + 2 
         
-    for i in range(n):
-        for j in range(m):
-            mass_diff = x[i, j]
-            r = mass_diff // C_NUM_DEFFECT_BIN
-            c = mass_diff % C_NUM_DEFFECT_BIN
-            if r >= C_MAX_PEAK_DIFF: continue
-            f[i+1, r+1] = c + 2
+#     for i in range(n):
+#         for j in range(m):
+#             mass_diff = x[i, j]
+#             r = mass_diff // C_NUM_DEFFECT_BIN
+#             c = mass_diff % C_NUM_DEFFECT_BIN
+#             if r >= C_MAX_PEAK_DIFF: continue
+#             f[i+1, r+1] = c + 2
+#     return f
+
+def vectorize_mass_diff(x_float, dmass_float): #vectorized, should be the same output based on testing
+    """
+    Pure NumPy vectorized version.
+    """
+    n, m = x_float.shape
+    f = np.zeros((n + 1, C_MAX_PEAK_DIFF + 1), dtype=np.int64)
+    x = np.round(x_float * C_NUM_DEFFECT_BIN).astype(np.int64)
+    dmass = int(round(dmass_float * C_NUM_DEFFECT_BIN))
+
+    # First-row handling
+    r0 = dmass // C_NUM_DEFFECT_BIN
+    if r0 >= C_MAX_PEAK_DIFF:
+        f[0, 0] = CLS
+    else:
+        c0 = dmass % C_NUM_DEFFECT_BIN
+        f[0, r0 + 1] = c0 + 2
+
+    # Vectorized scatter
+    r = x // C_NUM_DEFFECT_BIN
+    c = x % C_NUM_DEFFECT_BIN
+    mask = r < C_MAX_PEAK_DIFF
+    i_idx, j_idx = np.nonzero(mask)
+    rows = i_idx + 1
+    cols = r[mask] + 1
+    f[rows, cols] = c[mask] + 2
+    f = torch.from_numpy(f)
     return f
+
 
 def compute_feature_by_sim_matrix(x, y, dmass):
     '''
