@@ -72,7 +72,7 @@ def mspair_collate_fn(batch):
 #             f[i+1, r+1] = c + 2
 #     return f
 
-def vectorize_mass_diff(x_float, dmass_float): #vectorized, should be the same output based on testing
+def vectorize_mass_diff(x_float, dmass_float, int0, int1): #vectorized, should be the same output based on testing
     """
     Pure NumPy vectorized version.
     """
@@ -101,13 +101,13 @@ def vectorize_mass_diff(x_float, dmass_float): #vectorized, should be the same o
     return f
 
 
-def compute_feature_by_sim_matrix(x, y, dmass):
+def compute_feature_by_sim_matrix(x, y, dmass, int1, int2):
     '''
     Convert a mass difference matrix into aligned matrix and its padding mask 
     '''
     n = x.shape[0]
     mass_diff = np.abs(x.reshape(-1, 1) - y)
-    f = vectorize_mass_diff(mass_diff, dmass)
+    f = vectorize_mass_diff(mass_diff, dmass, int1, int2)
     mask = torch.zeros(n+1, dtype=torch.bool)
     return f, mask
 

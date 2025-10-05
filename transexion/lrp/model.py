@@ -493,6 +493,20 @@ class relMSDiffModel(nn.Module):
         xR = xR.view(bsz, L, -1, self.defect_dim)
         
         return xR 
+    
+  
+class AttentionalMSDiffModel(relMSDiffModel):
+    def forward(self, x, mask):
+        # This is the same as original relMSDiffModel forward pass
+        x = self.defect_emb(x)
+        x = torch.flatten(x, start_dim=2)
+        x = self.nominal_emb_1(x)
+        x = self.nominal_emb_2(x)
+        x = self.peak_emb(x)
+        h = self.transformer_encoder(x, src_key_padding_mask=mask) # Shape: [N, L, D]
+        
+        # but we return the full sequence `h` instead of the pooled output.
+        return h
         
                    
 class relMSSimilarityModel(nn.Module):
